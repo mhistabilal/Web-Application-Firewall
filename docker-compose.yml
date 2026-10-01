@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  waf-proxy:
+    build: .
+    command: python waf_server.py
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+    depends_on:
+      - backend-app
+    networks:
+      - waf_net
+
+  backend-app:
+    build: .
+    command: python backend_app.py
+    ports:
+      - "5001:5001"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app
+    networks:
+      - waf_net
+
+networks:
+  waf_net:
+    driver: bridge

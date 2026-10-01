@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WAF Interception Monitoring Console</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: #f0f2f5; }
+        .navbar { background-color: #0f2027; padding: 15px 30px; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { margin: 0; font-weight: 400; font-size: 22px; letter-spacing: 1px; }
+        .btn-logout { color: #ff4a4a; text-decoration: none; font-weight: bold; padding: 8px 15px; border: 1px solid #ff4a4a; border-radius: 4px; transition: 0.3s; }
+        .btn-logout:hover { background: #ff4a4a; color: white; }
+        .content-body { padding: 40px; max-width: 1200px; margin: auto; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .btn-clear { background-color: #d9534f; color: white; border: none; padding: 12px 25px; font-size: 15px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .btn-clear:hover { background-color: #c9302c; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-radius: 6px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e1e4e8; }
+        th { background-color: #203a43; color: white; font-weight: 500; text-transform: uppercase; font-size: 13px; }
+        tr:hover { background-color: #f8f9fa; }
+        .badge { padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #ffefe1; color: #b76e00; }
+        .badge-scanner { background: #e1f5fe; color: #0288d1; }
+        .payload-text { font-family: 'Courier New', Courier, monospace; background: #f4f4f4; padding: 4px 8px; border-radius: 3px; word-break: break-all; color: #c7254e; }
+        .empty-state { text-align: center; padding: 50px; background: white; border-radius: 6px; color: #777; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h2>Web Application Firewall Audit Engine</h2>
+        <a href="/logout" class="btn-logout">Terminate Admin Session</a>
+    </div>
+
+    <div class="content-body">
+        <div class="dashboard-header">
+            <h1 style="color: #203a43; margin: 0;">Intercepted Incident Journals</h1>
+            {% if logs %}
+            <form action="/waf-admin/clear" method="POST" onsubmit="return confirm('Confirm complete purge of security log histories? This execution is irreversible.');">
+                <input type="submit" class="btn-clear" value="Purge Incident History">
+            </form>
+            {% endif %}
+        </div>
+
+        {% if logs %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>Source IP Address</th>
+                    <th>Timestamp (UTC)</th>
+                    <th>Flagged Exploitation Threat Matrix</th>
+                    <th>Intercepted Malicious Input String</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td><strong>#{{ log['id'] }}</strong></td>
+                    <td><span style="color: #0288d1; font-weight: bold;">{{ log['ip_address'] }}</span></td>
+                    <td>{{ log['timestamp'] }}</td>
+                    <td>
+                        <span class="badge {% if log['attack_type'] == 'Automated Vulnerability Scanner' %}badge-scanner{% endif %}">
+                            {{ log['attack_type'] }}
+                        </span>
+                    </td>
+                    <td><span class="payload-text">{{ log['payload'] | e }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>🛡️ No security incidents logged. Perimeter interfaces operating safely.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
